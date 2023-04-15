@@ -1993,3 +1993,78 @@ close: 1 nil
 }
 --- no_error_log
 [error]
+
+
+
+=== TEST 27: receiveunitl(size) example
+--- config
+    lua_socket_buffer_size 3;
+    server_tokens off;
+    location /t {
+        set $port $TEST_NGINX_SERVER_PORT;
+
+        content_by_lua_block {
+            local sock = ngx.socket.tcp()
+            local port = ngx.var.port
+
+            local ok, err = sock:connect("127.0.0.1", port)
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+
+            ngx.say("connected: ", ok)
+
+            local req = "GET /foo HTTP/1.0\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+
+            local bytes, err = sock:send(req)
+            if not bytes then
+                ngx.say("failed to send request: ", err)
+                return
+            end
+            ngx.say("request sent: ", bytes)
+
+            local read_headers = sock:receiveuntil("\r\n\r\n")
+            local headers, err, part = read_headers()
+            if not headers then
+                ngx.say("failed to read headers: ", err, " [", part, "]")
+            end
+
+            if true then
+                local reader = sock:receiveuntil("\r\n--abcedhb")
+                while true do
+                    local data, err, partial = reader(4)
+                    if not data then
+                        if err then
+                            ngx.say("failed to read the data stream: ", err)
+                            break
+                        end
+
+                        ngx.say("read done")
+                        break
+                    end
+                    ngx.say("read chunk: [", data, "]")
+                end
+           end
+        }
+    }
+
+    location /foo {
+        echo -- "hello, world! -agentzh\r\n--abcedhb blah blah";
+        more_clear_headers Date;
+    }
+--- request
+GET /t
+
+--- response_body
+connected: 1
+request sent: 57
+read chunk: [hell]
+read chunk: [o, w]
+read chunk: [orld]
+read chunk: [! -a]
+read chunk: [gent]
+read chunk: [zh]
+read done
+--- no_error_log
+[error]
