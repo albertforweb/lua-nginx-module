@@ -1260,6 +1260,7 @@ ngx_http_lua_ffi_get_resp_header(ngx_http_request_t *r,
 
         r->headers_out.location->hash = ngx_http_lua_location_hash;
         ngx_str_set(&r->headers_out.location->key, "Location");
+        r->headers_out.location->lower_key = (u_char *) "location";
     }
 #endif
 

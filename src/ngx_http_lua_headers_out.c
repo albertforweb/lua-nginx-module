@@ -152,6 +152,7 @@ ngx_http_set_header_helper(ngx_http_request_t *r, ngx_http_lua_header_val_t *hv,
 
         r->headers_out.location->hash = ngx_http_lua_location_hash;
         ngx_str_set(&r->headers_out.location->key, "Location");
+        r->headers_out.location->lower_key = (u_char *) "location";
     }
 #endif
 
@@ -644,6 +645,7 @@ ngx_http_lua_get_output_header(lua_State *L, ngx_http_request_t *r,
 
         r->headers_out.location->hash = ngx_http_lua_location_hash;
         ngx_str_set(&r->headers_out.location->key, "Location");
+        r->headers_out.location->lower_key = (u_char *) "location";
     }
 #endif
 

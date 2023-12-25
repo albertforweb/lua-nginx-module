@@ -284,6 +284,7 @@ ngx_http_lua_ngx_redirect(lua_State *L)
     h->next = NULL;
 #endif
     ngx_str_set(&h->key, "Location");
+    h->lowcase_key = (u_char *) "location";
 
     r->headers_out.status = rc;
 
